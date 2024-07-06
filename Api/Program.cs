@@ -5,11 +5,12 @@ using Data.Reprositories;
 using DTO.CustomMapping;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.FileProviders;
-using Service.Services;
+using Services.Services;
 using Services.DataInitializer;
 using WebFramework.Configuration;
 using WebFramework.Middlewares;
 using WebFramework.Swagger;
+
 
 var builder = WebApplication.CreateBuilder(args);
 var siteSettings = builder.Configuration.GetSection(nameof(SiteSettings)).Get<SiteSettings>();
@@ -22,8 +23,6 @@ builder.Services.AddControllers(options => { options.Filters.Add(new AuthorizeFi
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwagger(siteSettings!.Url);
-
-var app = builder.Build();
 builder.Services.AddDbContext(builder.Configuration);
 builder.Services.AddCustomIdentity(siteSettings.IdentitySettings);
 
@@ -38,6 +37,8 @@ builder.Services.AddJwtAuthentication(siteSettings.JwtSettings);
 
 builder.Services.InitializeAutoMapper();
 builder.Services.AddCustomApiVersioning();
+
+var app = builder.Build();
 
 
 // Configure the HTTP request pipeline.

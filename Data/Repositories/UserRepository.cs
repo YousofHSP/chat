@@ -12,10 +12,10 @@ namespace Data.Repositories
     public class UserRepository(ApplicationDbContext dbContext, UserManager<User> userManager)
         : Repository<User>(dbContext), IUserRepository, IScopedDependency
     {
-        public async Task<User?> GetByMobileAndPass(string mobile, string password, CancellationToken cancellationToken)
+        public async Task<User?> GetByMobileAndPass(string userName, string password, CancellationToken cancellationToken)
         {
             
-            var user = await Table.Where(p => p.Mobile == mobile).SingleOrDefaultAsync(cancellationToken);
+            var user = await Table.Where(p => p.UserName == userName).SingleOrDefaultAsync(cancellationToken);
             if (user is null) return null;
             var isPasswordValid = await userManager.CheckPasswordAsync(user, password);
             return isPasswordValid ? user : null;

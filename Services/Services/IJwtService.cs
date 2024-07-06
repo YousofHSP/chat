@@ -1,7 +1,7 @@
 ﻿using Entities;
 using Services;
 
-namespace Service.Services
+namespace Services.Services
 {
     public interface IJwtService
     {

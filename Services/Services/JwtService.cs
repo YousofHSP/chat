@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Services;
 
-namespace Service.Services
+namespace Services.Services
 {
     public class JwtService : IJwtService, IScopedDependency
     {
@@ -52,7 +52,7 @@ namespace Service.Services
         {
             var result = await _signInManager.ClaimsFactory.CreateAsync(user);
             // add custom claims
-            var list = new List<Claim>(result.Claims) { new Claim(ClaimTypes.MobilePhone, user.Mobile) };
+            var list = new List<Claim>(result.Claims) { new Claim(ClaimTypes.MobilePhone, user.UserName!) };
             return list;
         }
     }

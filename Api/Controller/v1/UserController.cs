@@ -7,7 +7,7 @@ using Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Service.Services;
+using Services.Services;
 using WebFramework.Api;
 
 namespace Api.Controller.v1;

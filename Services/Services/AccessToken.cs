@@ -1,6 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 
-namespace Service.Services;
+namespace Services.Services;
 
 public class AccessToken
 {

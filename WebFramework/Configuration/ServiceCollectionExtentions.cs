@@ -25,7 +25,8 @@ namespace WebFramework.Configuration
         {
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseSqlServer(configuration.GetConnectionString("SqlServer"));
+                var connectionString = configuration.GetConnectionString("SqlServer");
+                options.UseSqlServer(connectionString);
                 options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             });
         }

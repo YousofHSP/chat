@@ -9,7 +9,6 @@ namespace Entities;
 
 public class User : IdentityUser<int>, IEntity<int>
 {
-    public required string Mobile { get; set; } = null!;
     public string FullName { get; set; } = null!;
     public GenderType Gender { get; set; }
     public UserStatus Status { get; set; } = UserStatus.Active;
@@ -27,7 +26,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.Property(user => user.UserName).IsRequired().HasMaxLength(100);
+        builder.Property(user => user.UserName).IsRequired();
     }
 }
 
