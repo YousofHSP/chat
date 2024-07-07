@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Common.Exceptions;
 using Data.Contracts;
@@ -14,7 +15,7 @@ namespace WebFramework.Api;
 [ApiController]
 [Authorize]
 [ApiVersion("1")]
-[Route("api/v{version:ApiVersion}/admin/[controller]")]
+[Route("api/v{version:ApiVersion}/[controller]")]
 
 public class CrudController<TDto, TResDto, TEntity, TKey>(IRepository<TEntity> repository, IMapper mapper)
     : BaseController

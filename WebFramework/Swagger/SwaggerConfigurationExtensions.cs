@@ -70,7 +70,7 @@ public static class SwaggerConfigurationExtensions
                     {
                         Password = new OpenApiOAuthFlow()
                         {
-                            TokenUrl = new Uri($"{url}/api/v1/admin/Users/Token")
+                            TokenUrl = new Uri($"{url}/api/v1/User/Token")
                         }
                     }
                 });

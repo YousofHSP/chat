@@ -18,6 +18,15 @@ public class User : IdentityUser<int>, IEntity<int>
     public DateTimeOffset LastLoginDate { get; set; } = DateTimeOffset.Now;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.Now;
 
+    #region Navigation
+
+    public ICollection<ChatMessage>? ChatMessages { get; set; }
+    public ICollection<ChatRoom>? ChatRooms { get; set; }
+    public ICollection<Follow>? Follwers { get; set; }
+    public ICollection<Follow>? Following { get; set; }
+
+    #endregion
+
     
 
 }
@@ -27,6 +36,19 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     public void Configure(EntityTypeBuilder<User> builder)
     {
         builder.Property(user => user.UserName).IsRequired();
+
+        builder.HasMany(u => u.ChatMessages)
+            .WithOne(cm => cm.Sender)
+            .HasForeignKey(cm => cm.SenderId);
+        builder.HasMany(u => u.ChatRooms)
+            .WithMany(cr => cr.Users);
+        builder.HasMany(u => u.Follwers)
+            .WithOne(f => f.User)
+            .HasForeignKey(f => f.UserId);
+        builder.HasMany(u => u.Following)
+            .WithOne(f => f.Follower)
+            .HasForeignKey(f => f.FollowerId);
+
     }
 }
 
