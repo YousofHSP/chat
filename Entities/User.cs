@@ -24,6 +24,7 @@ public class User : IdentityUser<int>, IEntity<int>
     public ICollection<ChatRoom>? ChatRooms { get; set; }
     public ICollection<Follow>? Follwers { get; set; }
     public ICollection<Follow>? Following { get; set; }
+    public ICollection<ChatRoom>? OwnedChatRooms { get; set; }
 
     #endregion
 
@@ -48,6 +49,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasMany(u => u.Following)
             .WithOne(f => f.Follower)
             .HasForeignKey(f => f.FollowerId);
+        builder.HasMany(u => u.OwnedChatRooms)
+            .WithOne(cr => cr.Owner)
+            .HasForeignKey(cr => cr.OwnerUserId);
 
     }
 }

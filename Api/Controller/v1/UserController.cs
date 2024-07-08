@@ -46,12 +46,9 @@ public class UserController(IUserRepository repository, IRepository<Follow> foll
     public async Task<ActionResult> GetFollowings(CancellationToken cancellationToken)
     {
         var userId = int.Parse( User.Identity!.GetUserId());
-        var users = await repository.TableNoTracking
-            .Include(u => u.Following)
-            .Where(u => u.Following != null && u.Following.Select(i => i.UserId).Contains(userId))
-            .ProjectTo<UserResDto>(mapper.ConfigurationProvider)
-            .ToListAsync(cancellationToken);
-        return Ok(users);
+        var users = await repository.GetFollowings(userId, cancellationToken);
+        var dtos = mapper.Map<List<UserDto>>(users);
+        return Ok(dtos);
     }
 
     public async Task<ActionResult> Follow(int userId, CancellationToken cancellationToken)

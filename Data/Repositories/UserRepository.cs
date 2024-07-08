@@ -43,5 +43,13 @@ namespace Data.Repositories
             user.PasswordHash = passwordHash;
             await base.AddAsync(user, cancellationToken);
         }
+
+        public async Task<List<User>> GetFollowings(int userId, CancellationToken cancellationToken)
+        {
+            return await TableNoTracking
+                .Include(u => u.Following)
+                .Where(u => u.Following != null && u.Following.Select(i => i.UserId).Contains(userId))
+                .ToListAsync(cancellationToken);
+        }
     }
 }

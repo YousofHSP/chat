@@ -1,3 +1,4 @@
+using Api.Hubs;
 using Common;
 using Data.Contracts;
 using Data.Repositories;
@@ -69,5 +70,7 @@ app.UseStaticFiles(new StaticFileOptions
         Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
     RequestPath = "/uploads"
 });
+app.MapHub<ChatHub>("/chat");
+
 
 app.Run();

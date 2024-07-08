@@ -8,5 +8,6 @@ namespace Data.Contracts
         Task AddAsync(User user, string password, CancellationToken cancellationToken);
         Task UpdateSecurityStampAsync(User user, CancellationToken cancellationToken);
         Task UpdateLastLoginDateAsync(User user, CancellationToken cancellationToken);
+        Task<List<User>> GetFollowings(int userId, CancellationToken cancellationToken);
     }
 }
