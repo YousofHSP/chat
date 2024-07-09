@@ -1,0 +1,118 @@
+﻿@page "/chat/{Id:int}"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.SignalR.Client
+@using DTO
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>@_user.UserName</PageTitle>
+
+<div class="flex flex-col mt-auto content-end h-screen">
+    <div class="chat-items pb-20">
+        @foreach(var chatMessage in _chatMessages)
+        {
+            @if (chatMessage.Sender.Id == Id)
+            {
+                <div class="flex items-start justify-end gap-2.5 my-2">
+                    <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-s-xl rounded-se-xl dark:bg-gray-700">
+                        <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">@chatMessage.Sender.FullName</span>
+                            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">@chatMessage.CreatedAt</span>
+                        </div>
+                        <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">@chatMessage.Message</p>
+                        @* <span class="text-sm font-normal text-gray-500 dark:text-gray-400">Delivered</span> *@
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div id="test" class="flex col-12 items-start gap-2.5">
+                    <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-e-xl rounded-es-xl dark:bg-gray-700">
+                        <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                            <span class="text-sm font-semibold text-gray-900 dark:text-white">@chatMessage.Sender.FullName</span>
+                            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">@chatMessage.CreatedAt</span>
+                        </div>
+                        <p class="text-sm font-normal py-2.5 text-gray-900 dark:text-white">@chatMessage.Message</p>
+                        @* <span class="text-sm font-normal text-gray-500 dark:text-gray-400">Delivered</span> *@
+                    </div>
+                </div>
+            }
+        }
+    </div>
+    <form class="flex fixed bottom-2 left-8 sm:right-72">
+        <label for="simple-search" class="sr-only">Send</label>
+        <div class="relative w-full">
+            <input type="text" @bind="_message" id="simple-search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full  p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="پیام خود را وارد کنید" required/>
+        </div>
+        <button @onclick="SendMessage" type="button" class="p-2.5 ms-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            <svg class="w-6 h-6 " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v13m0-13 4 4m-4-4-4 4"/>
+            </svg>
+
+            <span class="sr-only">Send</span>
+        </button>
+    </form>
+
+</div>
+
+
+@code {
+
+    [Parameter] public int Id { get; set; }
+    private HubConnection? _hubConnection;
+    private string _message = string.Empty;
+
+    private Guid _chatRoomId;
+    private List<ChatMessageDto> _chatMessages = [];
+    private readonly UserResDto _user = new UserResDto() { Id = 1, UserName = "dsf", FullName = "asdfasdf" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:44353/chat")
+            .Build();
+        await _hubConnection.StartAsync();
+        Console.WriteLine("test " + _hubConnection.State);
+        
+        await _hubConnection.SendAsync("StartChatRoom", 1, Id);
+        _hubConnection.On<Guid>("setRoomId", (roomId) => 
+        {
+            _chatRoomId = roomId;
+            GetMessages();
+        });
+        
+        await base.OnInitializedAsync();
+    }
+
+    private async Task GetMessages()
+    {
+        await _hubConnection!.SendAsync("LoadRoomChats", _chatRoomId);
+        _hubConnection.On<List<ChatMessageDto>>("generateMessagesList", (messages) =>
+        {
+            Console.WriteLine("test");
+            _chatMessages = messages;
+            StateHasChanged();
+        });
+
+
+    }
+
+    protected void SendMessage()
+    {
+        Console.WriteLine("sadfa");
+        // var message = new ChatMessageDto()
+        // {
+        //     SenderId = 1,
+        //     Message = _message,
+        //     ChatRoomId = _chatRoomId
+        // };
+        // await _hubConnection!.SendAsync("SendMessage", message);
+        // _hubConnection.On<ChatMessageDto>("receiveNewMessage", (messageDto) =>
+        // {
+        //     Console.WriteLine(messageDto.Message);
+        // });
+
+
+    }
+
+}

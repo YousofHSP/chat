@@ -1,10 +1,22 @@
 using BlazorClient.Components;
+using BlazorClient.Services;
+using Blazored.LocalStorage;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped(sp =>
+    new HttpClient
+    {
+        BaseAddress = new Uri(builder.Configuration["ApiUrl"] ?? "https://localhost:44353")
+    });
+builder.Services.AddScoped<ILocalStorage, LocalStorage>();
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddHttpClient();
+builder.Services.AddBlazoredLocalStorage();
 
 var app = builder.Build();
 

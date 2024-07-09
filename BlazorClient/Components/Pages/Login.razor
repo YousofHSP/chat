@@ -1,0 +1,89 @@
+﻿@page "/login"
+@rendermode InteractiveServer
+@using BlazorClient.Components.Layout
+@using Blazored.LocalStorage
+@using DTO
+@inject NavigationManager Navigation
+@inject HttpClient HttpClient;
+@inject IJSRuntime JS
+@inject ILocalStorageService LocalStorage;
+@layout AccountingLayout;
+    
+<PageTitle>ورود</PageTitle>
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="max-w-md w-full bg-white shadow-md rounded-lg p-8">
+        <h2 class="text-2xl font-bold text-center mb-6">ورود</h2>
+        <EditForm Model="@LoginDto" OnValidSubmit="HandleLogin" FormName="formLogin">
+            <DataAnnotationsValidator/>
+
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    نام کاربری
+                </label>
+                <InputText class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" @bind-Value="LoginDto.username"/>
+                <ValidationMessage For="@(() => LoginDto.username)"/>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    رمزعبور
+                </label>
+                <InputText type="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" @bind-Value="LoginDto.password"/>
+                <ValidationMessage For="@(() => LoginDto.password)"/>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    ورود
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    public LoginDto LoginDto { get; set; } = new();
+    private IJSObjectReference? module;
+    private string _accessToken = string.Empty;
+
+    public class AccessToken
+    {
+        public string access_token { get; set; }
+    }
+
+    
+    private async Task HandleLogin()
+    {
+        LoginDto.grant_type = "password";
+        var result = await HttpClient.PostAsJsonAsync("/api/v1/User/Token", LoginDto);
+        if (result.IsSuccessStatusCode) 
+        {
+            var token = await result.Content.ReadFromJsonAsync<AccessToken>();
+            _accessToken = token!.access_token;
+            StateHasChanged();
+            // try
+            // {
+            //     await LocalStorage.SetItemAsStringAsync("access_token", token!.access_token);
+            // }
+            // catch (Exception e)
+            // {
+            //     Console.WriteLine(e);
+            // }
+
+        }
+    }
+
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!string.IsNullOrEmpty(_accessToken))
+        {
+            LocalStorage.SetItemAsStringAsync("access_token", _accessToken);
+            Navigation.NavigateTo("/");
+        }
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+}

@@ -17,12 +17,16 @@ using WebFramework.Api;
 namespace Api.Controller.v1;
 
 [ApiVersion("1")]
-public class UserController(IUserRepository repository, IRepository<Follow> followRepository, IMapper mapper, UserManager<User> userManager, IJwtService jwtService) : CrudController<UserDto, UserResDto, User>(repository, mapper)
+public class UserController(
+    IUserRepository repository,
+    IRepository<Follow> followRepository,
+    IMapper mapper,
+    UserManager<User> userManager,
+    IJwtService jwtService) : CrudController<UserDto, UserResDto, User>(repository, mapper)
 {
-    
     [HttpPost("[action]")]
     [AllowAnonymous]
-    public async Task<ActionResult> Token([FromForm]TokenRequest tokenRequest, CancellationToken cancellationToken)
+    public async Task<ActionResult> Token(TokenRequest tokenRequest, CancellationToken cancellationToken)
     {
         var user = await repository.GetByMobileAndPass(tokenRequest.username, tokenRequest.password, cancellationToken);
         if (user is null)
@@ -30,37 +34,43 @@ public class UserController(IUserRepository repository, IRepository<Follow> foll
         await userManager.UpdateSecurityStampAsync(user);
         var jwt = await jwtService.GenerateAsync(user);
         return new JsonResult(jwt);
-
     }
 
-    public async Task<ActionResult> GetByFilter(string filter, CancellationToken cancellationToken)
+    [HttpGet("GetByFilter")]
+    public async Task<ApiResult<List<UserResDto>>> GetByFilter(string? filter, CancellationToken cancellationToken)
     {
-        var users = await repository.TableNoTracking
-            .Where(i => i.UserName!.Contains(filter) || i.FullName.Contains(filter))
-            .ProjectTo<UserResDto>(mapper.ConfigurationProvider)
+        var userId = User.Identity!.GetUserId<int>();
+        var query = repository.TableNoTracking.Where(i => i.Id != userId);
+        if (!string.IsNullOrEmpty(filter))
+        {
+            query = repository.TableNoTracking
+                .Where(i => i.UserName!.Contains(filter) || i.FullName.Contains(filter));
+        }
+
+        var users = await query.ProjectTo<UserResDto>(mapper.ConfigurationProvider)
             .ToListAsync(cancellationToken);
         return Ok(users);
-
     }
-
-    public async Task<ActionResult> GetFollowings(CancellationToken cancellationToken)
-    {
-        var userId = int.Parse( User.Identity!.GetUserId());
-        var users = await repository.GetFollowings(userId, cancellationToken);
-        var dtos = mapper.Map<List<UserDto>>(users);
-        return Ok(dtos);
-    }
-
-    public async Task<ActionResult> Follow(int userId, CancellationToken cancellationToken)
-    {
-        var followerId = User.Identity!.GetUserId<int>();
-        var model = new Follow
-        {
-            UserId = userId,
-            FollowerId = followerId
-        };
-        await followRepository.AddAsync(model, cancellationToken);
-        return Ok();
-    }
-    
+    //
+    // [HttpGet]
+    // public async Task<ActionResult> GetFollowings(CancellationToken cancellationToken)
+    // {
+    //     var userId = int.Parse( User.Identity!.GetUserId());
+    //     var users = await repository.GetFollowings(userId, cancellationToken);
+    //     var dtos = mapper.Map<List<UserDto>>(users);
+    //     return Ok(dtos);
+    // }
+    //
+    // [HttpGet]
+    // public async Task<ActionResult> Follow(int userId, CancellationToken cancellationToken)
+    // {
+    //     var followerId = User.Identity!.GetUserId<int>();
+    //     var model = new Follow
+    //     {
+    //         UserId = userId,
+    //         FollowerId = followerId
+    //     };
+    //     await followRepository.AddAsync(model, cancellationToken);
+    //     return Ok();
+    // }
 }

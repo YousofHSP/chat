@@ -9,14 +9,14 @@ public class UserDataInitializer(IUserRepository userRepository) : IDataInitiali
 {
     public void InitializerData()
     {
-        if (userRepository.TableNoTracking.Any(u => u.UserName == "admin")) return;
+        if (userRepository.TableNoTracking.Any(u => u.UserName == "test")) return;
         var passwordHasher = new PasswordHasher<User>();
             
         var user = new User()
         {
-            UserName = "admin",
-            Email = "admin@gmail.com",
-            FullName = "yousof",
+            UserName = "test",
+            Email = "test@gmail.com",
+            FullName = "test",
             Gender = GenderType.Male,
         };
         user.PasswordHash = passwordHasher.HashPassword(user, "1234");

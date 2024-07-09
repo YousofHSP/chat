@@ -5,6 +5,7 @@ using Data.Repositories;
 using Data.Reprositories;
 using DTO.CustomMapping;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.FileProviders;
 using Services.Services;
 using Services.DataInitializer;
@@ -27,6 +28,12 @@ builder.Services.AddSwagger(siteSettings!.Url);
 builder.Services.AddDbContext(builder.Configuration);
 builder.Services.AddCustomIdentity(siteSettings.IdentitySettings);
 
+builder.Services.AddSignalR();
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        ["application/octet-stream"]);
+});
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
@@ -59,17 +66,14 @@ app.UseCustomExceptionHandler();
 
 app.UseCors(options =>
 {
-    options.AllowAnyOrigin()
+    options
+        .AllowAnyOrigin()
         .AllowAnyMethod()
         .AllowAnyHeader();
 });
 app.UseStaticFiles();
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")),
-    RequestPath = "/uploads"
-});
+app.UseResponseCompression();
+
 app.MapHub<ChatHub>("/chat");
 
 

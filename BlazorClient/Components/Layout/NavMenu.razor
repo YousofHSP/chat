@@ -1,29 +1,60 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">BlazorClient</a>
+﻿@using System.Net.Http.Headers
+@using BlazorClient.Services
+@using Blazored.LocalStorage
+@using WebFramework.Api
+@using DTO
+@rendermode InteractiveServer
+@inject HttpClient HttpClient;
+@inject ILocalStorageService LocalStorage;
+@inject IJSRuntime JS
+
+
+<aside id="default-sidebar" class="fixed top-0 right-0 z-40 w-64 h-screen transition-transform -translate-x-full sm:translate-x-0" aria-label="Sidebar">
+    <div class="h-full px-3 py-4 overflow-y-auto bg-gray-50 dark:bg-gray-800">
+        <ul class="space-y-2 font-medium">
+            @foreach (var item in _users)
+            {
+                var url = $"/chat/{item.Id}";
+                <li>
+                    <NavLink href="@url" class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                        <div class="relative w-10 h-10 overflow-hidden bg-gray-100 rounded-full dark:bg-gray-600">
+                            <svg class="absolute w-12 h-12 text-gray-400 -left-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                        </div>
+                        <span class="ms-3">@item.FullName</span>
+                    </NavLink>
+                </li>
+            }
+        </ul>
     </div>
-</div>
+</aside>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler"/>
+@code {
+    private string _userFullName = "yousof hosseinpour";
+    private List<UserResDto> _users = [];
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+    }
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var accessToken = await LocalStorage.GetItemAsync<string>("access_token");
+            var request = new HttpRequestMessage(HttpMethod.Get, "api/v1/User/GetByFilter");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        
+            var response = await HttpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResult<List<UserResDto>>>();
+                await JS.InvokeVoidAsync("console.log", result);
+                _users = result is not null ? result.Data : [];
+                StateHasChanged();
+            }
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
-</div>
+}
